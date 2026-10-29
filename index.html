@@ -1,167 +1,185 @@
-<?php
-// ==========================================
-// 1. الاتصال بقاعدة البيانات
-// ==========================================
-$db_host = "localhost";
-$db_user = "root";
-$db_pass = "";
-$db_name = "exam_bank"; // استبدله باسم قاعدة البيانات لديك
-
-$conn = new mysqli($db_host, $db_user, $db_pass, $db_name);
-
-if ($conn->connect_error) { 
-    die("فشل الاتصال بقاعدة البيانات: " . $conn->connect_error); 
-}
-$conn->set_charset("utf8mb4");
-
-// ==========================================
-// 2. API لتأكيد الرمز المباشر النصي (AJAX)
-// ==========================================
-if (isset($_GET['action']) && $_GET['action'] === 'verify_passcode') {
-    header('Content-Type: application/json; charset=utf-8');
-    
-    $paperId = (int)($_POST['paper_id'] ?? 0);
-    $enteredCode = $_POST['passcode'] ?? '';
-
-    $stmt = $conn->prepare("SELECT passcode FROM exam_papers WHERE id = ?");
-    $stmt->bind_param("i", $paperId);
-    $stmt->execute();
-    $res = $stmt->get_result()->fetch_assoc();
-
-    if ($res && !empty($res['passcode'])) {
-        if ($enteredCode === $res['passcode']) {
-            echo json_encode(['success' => true]);
-        } else {
-            echo json_encode(['success' => false, 'message' => 'رمز العبور غير صحيح!']);
-        }
-    } else {
-        echo json_encode(['success' => true]); // مسموح الدخول في حال لا يوجد رمز
-    }
-    exit;
-}
-
-// ==========================================
-// 3. جلب الأسئلة والأجوبة بطريقة تمنع تكرار البيانات
-// ==========================================
-$sql = "SELECT e.id, e.subject, e.branch, e.year, e.round, e.question_pdf, 
-              (e.passcode IS NOT NULL AND e.passcode != '') AS is_protected
-        FROM exam_papers e 
-        ORDER BY e.year DESC, e.id DESC";
-
-$result = $conn->query($sql);
-$papersData = [];
-
-if ($result && $result->num_rows > 0) {
-    while ($row = $result->fetch_assoc()) {
-        $paperId = $row['id'];
-
-        // جلب صفحات/ملفات الأسئلة
-        $qPages = [];
-        $qStmt = $conn->prepare("SELECT file_path FROM question_files WHERE paper_id = ?");
-        $qStmt->bind_param("i", $paperId);
-        $qStmt->execute();
-        $qRes = $qStmt->get_result();
-        while ($qRow = $qRes->fetch_assoc()) {
-            $qPages[] = $qRow['file_path'];
-        }
-        $qStmt->close();
-
-        // في حال عدم وجود صفحات في جدول الأسئلة الفرعي، نعتمد الملف الرئيسي
-        if (empty($qPages) && !empty($row['question_pdf'])) {
-            $qPages[] = $row['question_pdf'];
-        }
-
-        // جلب ملحقات/ملفات الاجوبة
-        $answers = [];
-        $aStmt = $conn->prepare("SELECT id, title, file_path FROM answer_files WHERE paper_id = ?");
-        $aStmt->bind_param("i", $paperId);
-        $aStmt->execute();
-        $aRes = $aStmt->get_result();
-        while ($aRow = $aRes->fetch_assoc()) {
-            $answers[] = [
-                'id' => $aRow['id'],
-                'title' => $aRow['title'],
-                'file' => $aRow['file_path']
-            ];
-        }
-        $aStmt->close();
-
-        $papersData[] = [
-            'id' => $row['id'],
-            'subject' => $row['subject'],
-            'branch' => $row['branch'],
-            'year' => (int)$row['year'],
-            'round' => $row['round'],
-            'isProtected' => (bool)$row['is_protected'],
-            'questionPages' => $qPages,
-            'answers' => $answers
-        ];
-    }
-}
-?>
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>بنك الأسئلة والحلول النموذجية الشامل</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>استمارة المريض الراقد</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@600;800;900&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; font-family: 'Cairo', sans-serif; margin: 0; padding: 0; }
+        body { background-color: #eef2f6; color: #1e293b; padding: 10px; display: flex; justify-content: center; }
+        .mobile-card { background: #ffffff; width: 100%; max-width: 480px; border-radius: 18px; padding: 20px 14px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08); border: 1px solid #cbd5e1; }
+        .header { text-align: center; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid #1e40af; }
+        .header h2 { color: #1e40af; font-size: 1.4rem; font-weight: 900; }
+        
+        .alert { display: none; padding: 12px; border-radius: 10px; font-size: 0.95rem; font-weight: 800; text-align: center; margin-bottom: 15px; }
+        .alert.success { background-color: #dcfce7; color: #14532d; border: 2px solid #22c55e; }
+        .alert.error { background-color: #fee2e2; color: #7f1d1d; border: 2px solid #ef4444; }
+
+        .field-box { position: relative; margin-top: 14px; margin-bottom: 12px; }
+        .field-box label { position: absolute; top: -11px; right: 12px; background-color: #1e40af; color: #ffffff !important; font-size: 0.82rem; font-weight: 800; padding: 1px 10px; border-radius: 6px; z-index: 10; }
+        .field-box input, .field-box select, .field-box textarea { width: 100%; padding: 14px 12px 10px 12px; border: 2px solid #94a3b8; border-radius: 12px; font-size: 1rem; font-weight: 700; color: #0f172a; outline: none; background: #fff; }
+        .field-box textarea { resize: vertical; height: 85px; }
+        
+        .row-grid { display: flex; gap: 10px; }
+        .row-grid .field-box { flex: 1; }
+
+        .camera-btn-box { background-color: #eff6ff; border: 2px dashed #1e40af; border-radius: 14px; padding: 15px; text-align: center; cursor: pointer; margin-top: 15px; }
+        .preview-box { display: none; margin-top: 10px; position: relative; border-radius: 12px; overflow: hidden; border: 2px solid #1e40af; }
+        .preview-box img { width: 100%; max-height: 220px; object-fit: cover; display: block; }
+        .btn-cancel { position: absolute; top: 8px; left: 8px; background-color: #dc2626; color: white; border: none; padding: 6px 12px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+
+        .btn-submit { width: 100%; background-color: #1e40af; color: #ffffff; border: none; padding: 14px; font-size: 1.1rem; font-weight: 900; border-radius: 12px; margin-top: 15px; cursor: pointer; }
+        .btn-submit:disabled { background-color: #94a3b8; cursor: not-allowed; }
+    </style>
 </head>
 <body>
 
-    <h1>السادس العلمي</h1>
-    <h3>بنك الأسئلة والحلول النموذجية الشامل</h3>
-    <p>تصفح وحمل أسئلة السادس العلمي لجميع الأدوار والسنوات مع دعم التصفح الأفقي وملء الشاشة.</p>
+<div class="mobile-card">
+    <div class="header">
+        <h2>استمارة المريض الراقد</h2>
+    </div>
 
-    <!-- نموذج التصفية والفلترة -->
-    <form id="filterForm">
-        <h3>تصفية وتحديد البحث</h3>
+    <!-- مكان إظهار الرسائل والتنبيهات -->
+    <div id="alertBox" class="alert"></div>
 
-        <!-- المادة الدراسية -->
-        <label for="subject">المادة الدراسية:</label>
-        <select name="subject" id="subject">
-            <option value="">جميع المواد</option>
-            <option value="الرياضيات">الرياضيات</option>
-            <option value="الفيزياء">الفيزياء</option>
-            <option value="الكيمياء">الكيمياء</option>
-            <option value="الأحياء">الأحياء</option>
-            <option value="التربية الإسلامية">التربية الإسلامية</option>
-            <option value="اللغة العربية">اللغة العربية</option>
-            <option value="اللغة الإنكليزية">اللغة الإنكليزية</option>
-        </select>
+    <form id="patientForm">
+        <div class="field-box">
+            <label for="full_name">الاسم الثلاثي *</label>
+            <input type="text" id="full_name" name="full_name" required placeholder="أدخل اسم المريض الكامل">
+        </div>
 
-        <!-- الفرع الدراسي -->
-        <label for="branch">الفرع الدراسي:</label>
-        <select name="branch" id="branch">
-            <option value="">جميع الفروع</option>
-            <option value="العلمي (عام)">العلمي (عام)</option>
-            <option value="الأحيائي">الأحيائي</option>
-            <option value="التطبيقي">التطبيقي</option>
-        </select>
+        <div class="row-grid">
+            <div class="field-box">
+                <label for="mother_name">اسم الأم *</label>
+                <input type="text" id="mother_name" name="mother_name" required placeholder="اسم الأم الثلاثي">
+            </div>
+            <div class="field-box">
+                <label for="age">العمر *</label>
+                <input type="number" id="age" name="age" required placeholder="بالسنوات">
+            </div>
+        </div>
 
-        <!-- السنة الدراسية -->
-        <label for="year">السنة الدراسية:</label>
-        <select name="year" id="year">
-            <option value="">جميع السنوات</option>
-            <?php for ($y = (int)date('Y'); $y >= 2013; $y--): ?>
-                <option value="<?php echo $y; ?>"><?php echo $y; ?></option>
-            <?php endfor; ?>
-        </select>
+        <div class="row-grid">
+            <div class="field-box">
+                <label for="gender">الجنس *</label>
+                <select id="gender" name="gender" required>
+                    <option value="" disabled selected>اختر الجنس</option>
+                    <option value="ذكر">ذكر</option>
+                    <option value="أنثى">أنثى</option>
+                </select>
+            </div>
+            <div class="field-box">
+                <label for="phone_number">رقم الهاتف *</label>
+                <input type="tel" id="phone_number" name="phone_number" required placeholder="07XXXXXXXX">
+            </div>
+        </div>
 
-        <!-- الدور الامتحاني -->
-        <label for="round">الدور الامتحاني:</label>
-        <select name="round" id="round">
-            <option value="">جميع الأدوار</option>
-            <option value="الدور الأول">الدور الأول</option>
-            <option value="الدور الثاني">الدور الثاني</option>
-            <option value="الدور الثالث">الدور الثالث</option>
-            <option value="التمهيدي">التمهيدي</option>
-            <option value="خارج العراق">خارج العراق</option>
-        </select>
+        <div class="row-grid">
+            <div class="field-box">
+                <label for="file_number">رقم الطبلة *</label>
+                <input type="text" id="file_number" name="file_number" required placeholder="رقم الطبلة الفريد">
+            </div>
+            <div class="field-box">
+                <label for="entry_date">تاريخ الدخول *</label>
+                <input type="date" id="entry_date" name="entry_date" required>
+            </div>
+        </div>
+
+        <div class="field-box">
+            <label for="diagnosis">التشخيص الطبي *</label>
+            <textarea id="diagnosis" name="diagnosis" required placeholder="اكتب التشخيص الطبي..."></textarea>
+        </div>
+
+        <div class="field-box">
+            <label>صورة الملف / المستند</label>
+            <input type="file" id="cameraInput" name="file_image" accept="image/*" capture="environment" style="display: none;" onchange="showPreview(event)">
+            
+            <div class="camera-btn-box" onclick="document.getElementById('cameraInput').click();">
+                <span style="font-size: 2rem;">📷</span>
+                <div style="color: #1e40af; font-weight: 900;">اضغط لالتقاط صورة من الكاميرا</div>
+            </div>
+
+            <div class="preview-box" id="previewBox">
+                <button type="button" class="btn-cancel" onclick="clearImage()">حذف الصورة ✕</button>
+                <img id="imgPreview" src="#" alt="صورة الملف">
+            </div>
+        </div>
+
+        <button type="submit" id="btnSubmit" class="btn-submit">حفظ وإرسال البيانات 📤</button>
     </form>
+</div>
 
-    <script>
-        // مصفوفة البيانات الجاهزة للاستخدام في الواجهة الأمامية (JavaScript)
-        const papersData = <?php echo json_encode($papersData, JSON_UNESCAPED_UNICODE); ?>;
-        console.log("البيانات الجاهزة:", papersData);
-    </script>
+<script>
+    // عين تاريخ اليوم تلقائياً
+    document.getElementById('entry_date').value = new Date().toISOString().split('T')[0];
+
+    // معاينة الصورة الملتقطة
+    function showPreview(event) {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('imgPreview').src = e.target.result;
+                document.getElementById('previewBox').style.display = 'block';
+            }
+            reader.readAsDataURL(file);
+        }
+    }
+
+    function clearImage() {
+        document.getElementById('cameraInput').value = '';
+        document.getElementById('previewBox').style.display = 'none';
+    }
+
+    // رابط ملف الـ PHP الموجود على خادمك الخارجي
+    const SERVER_URL = 'https://your-domain.com/api_patient.php'; 
+
+    // إرسال البيانات عبر AJAX (Fetch API) إلى الخادم
+    document.getElementById('patientForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const btnSubmit = document.getElementById('btnSubmit');
+        const alertBox = document.getElementById('alertBox');
+        
+        btnSubmit.disabled = true;
+        btnSubmit.innerText = 'جاري الحفظ والرفع... ⏳';
+        alertBox.style.display = 'none';
+
+        const formData = new FormData(this);
+
+        try {
+            const response = await fetch(SERVER_URL, {
+                method: 'POST',
+                body: formData
+            });
+
+            const result = await response.json();
+
+            if (result.status === 'success') {
+                alertBox.className = 'alert success';
+                alertBox.innerText = result.message;
+                alertBox.style.display = 'block';
+                
+                // إعادة ضبط الاستمارة والصورة
+                document.getElementById('patientForm').reset();
+                clearImage();
+                document.getElementById('entry_date').value = new Date().toISOString().split('T')[0];
+            } else {
+                alertBox.className = 'alert error';
+                alertBox.innerText = result.message;
+                alertBox.style.display = 'block';
+            }
+        } catch (error) {
+            alertBox.className = 'alert error';
+            alertBox.innerText = 'حدث خطأ أثناء الاتصال بالخادم الرئيسي.';
+            alertBox.style.display = 'block';
+        } finally {
+            btnSubmit.disabled = false;
+            btnSubmit.innerText = 'حفظ وإرسال البيانات 📤';
+        }
+    });
+</script>
+
 </body>
 </html>
