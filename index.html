@@ -40,7 +40,7 @@
         <h2>استمارة المريض الراقد</h2>
     </div>
 
-    <!-- مكان إظهار الرسائل والتنبيهات -->
+    <!-- تنبيهات الرسائل -->
     <div id="alertBox" class="alert"></div>
 
     <form id="patientForm">
@@ -132,10 +132,10 @@
         document.getElementById('previewBox').style.display = 'none';
     }
 
-    // رابط ملف الـ PHP الموجود على خادمك الخارجي
-    const SERVER_URL = 'https://your-domain.com/api_patient.php'; 
+    // 🔗 رابط سيرفر Synology الخارجي لمعالجة البيانات
+    const SERVER_URL = 'http://QuickConnect.to/snaslocal1998/hospital/api_patient.php'; 
 
-    // إرسال البيانات عبر AJAX (Fetch API) إلى الخادم
+    // إرسال البيانات عبر AJAX (Fetch API) إلى Synology NAS
     document.getElementById('patientForm').addEventListener('submit', async function(e) {
         e.preventDefault();
         
@@ -161,7 +161,7 @@
                 alertBox.innerText = result.message;
                 alertBox.style.display = 'block';
                 
-                // إعادة ضبط الاستمارة والصورة
+                // إعادة ضبط الاستمارة
                 document.getElementById('patientForm').reset();
                 clearImage();
                 document.getElementById('entry_date').value = new Date().toISOString().split('T')[0];
@@ -172,7 +172,7 @@
             }
         } catch (error) {
             alertBox.className = 'alert error';
-            alertBox.innerText = 'حدث خطأ أثناء الاتصال بالخادم الرئيسي.';
+            alertBox.innerText = 'فشل الاتصال بسيرفر Synology. يرجى التأكد من تشغيل الخادم وتوفر خيار Web Station.';
             alertBox.style.display = 'block';
         } finally {
             btnSubmit.disabled = false;
