@@ -2,19 +2,19 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>استمارة تسجيل المريض الراقد</title>
-    <!-- خط Cairo الجميل والمتناسق -->
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         * {
             box-sizing: border-box;
             font-family: 'Cairo', sans-serif;
+            -webkit-tap-highlight-color: transparent;
         }
         body {
-            background-color: #f0f4f8;
+            background-color: #f8fafc;
             margin: 0;
-            padding: 20px;
+            padding: 12px;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -22,75 +22,166 @@
         }
         .container {
             background: #ffffff;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
             width: 100%;
             max-width: 600px;
         }
-        h2 {
+        
+        /* شاشة إدخال الرمز */
+        #lockScreen {
+            text-align: center;
+            padding: 20px 0;
+        }
+        #lockScreen h2 {
+            color: #1e3a8a;
+            margin-bottom: 10px;
+            font-size: 20px;
+        }
+        #lockScreen p {
+            color: #64748b;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+        .pin-input {
+            width: 100%;
+            max-width: 250px;
+            padding: 12px;
+            font-size: 20px;
+            text-align: center;
+            letter-spacing: 5px;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            outline: none;
+            margin-bottom: 15px;
+        }
+        .pin-input:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+        }
+        .lock-btn {
+            background-color: #2563eb;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            width: 100%;
+            max-width: 250px;
+        }
+        .lock-btn:hover {
+            background-color: #1d4ed8;
+        }
+        .lock-error {
+            color: #991b1b;
+            font-size: 13px;
+            font-weight: 600;
+            margin-top: 10px;
+            display: none;
+        }
+
+        /* الاستمارة (مخفية بالبداية) */
+        #mainFormContainer {
+            display: none;
+        }
+
+        h2.form-title {
             text-align: center;
             color: #1e3a8a;
-            margin-bottom: 25px;
+            margin-bottom: 20px;
+            font-size: 22px;
         }
         .form-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 15px;
+            gap: 12px;
         }
         .form-group {
-            margin-bottom: 15px;
+            margin-bottom: 12px;
         }
         .form-group.full-width {
             grid-column: span 2;
         }
         label {
             display: block;
-            margin-bottom: 6px;
+            margin-bottom: 5px;
             font-weight: 600;
             color: #334155;
-            font-size: 14px;
+            font-size: 13px;
         }
         input, select, textarea {
             width: 100%;
-            padding: 10px 12px;
+            padding: 12px;
             border: 1px solid #cbd5e1;
-            border-radius: 8px;
-            font-size: 14px;
+            border-radius: 10px;
+            font-size: 15px;
             outline: none;
-            transition: border-color 0.2s;
+            background-color: #fff;
+            transition: border-color 0.2s, box-shadow 0.2s;
         }
         input:focus, select:focus, textarea:focus {
             border-color: #2563eb;
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
         }
-        button {
+        
+        button[type="submit"] {
             background-color: #2563eb;
             color: white;
             border: none;
-            padding: 12px;
+            padding: 14px;
             width: 100%;
-            border-radius: 8px;
+            border-radius: 10px;
             font-size: 16px;
             font-weight: 700;
             cursor: pointer;
             transition: background-color 0.2s;
             margin-top: 10px;
         }
-        button:hover {
+        button[type="submit"]:hover {
             background-color: #1d4ed8;
         }
-        button:disabled {
+        button[type="submit"]:disabled {
             background-color: #94a3b8;
             cursor: not-allowed;
         }
+
+        .progress-container {
+            margin-top: 15px;
+            display: none;
+        }
+        .progress-bar-bg {
+            width: 100%;
+            background-color: #e2e8f0;
+            border-radius: 8px;
+            overflow: hidden;
+            height: 12px;
+        }
+        .progress-bar-fill {
+            height: 100%;
+            width: 0%;
+            background-color: #2563eb;
+            transition: width 0.1s linear;
+            border-radius: 8px;
+        }
+        .progress-text {
+            text-align: center;
+            font-size: 13px;
+            font-weight: 600;
+            color: #475569;
+            margin-top: 5px;
+        }
+
         .alert {
             margin-top: 15px;
-            padding: 10px;
-            border-radius: 8px;
+            padding: 12px;
+            border-radius: 10px;
             text-align: center;
             font-weight: 600;
             display: none;
+            font-size: 14px;
         }
         .alert.success {
             background-color: #d1fae5;
@@ -102,137 +193,202 @@
             color: #991b1b;
             display: block;
         }
-        @media (max-width: 600px) {
-            .form-grid {
-                grid-template-columns: 1fr;
-            }
-            .form-group.full-width {
-                grid-column: span 1;
-            }
+
+        @media (max-width: 576px) {
+            body { padding: 8px; }
+            .container { padding: 15px; border-radius: 12px; }
+            .form-grid { grid-template-columns: 1fr; gap: 10px; }
+            .form-group.full-width { grid-column: span 1; }
         }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>استمارة المريض الراقد</h2>
-    <form id="patientForm">
-        <div class="form-grid">
-            <!-- اسم المريض -->
-            <div class="form-group">
-                <label for="patientName">اسم المريض:</label>
-                <input type="text" id="patientName" name="patientName" required placeholder="الاسم الثلاثي واللقب">
-            </div>
-
-            <!-- اسم الأم -->
-            <div class="form-group">
-                <label for="motherName">اسم الأم:</label>
-                <input type="text" id="motherName" name="motherName" required placeholder="اسم الأم الثلاثي">
-            </div>
-
-            <!-- الجنس -->
-            <div class="form-group">
-                <label for="gender">الجنس:</label>
-                <select id="gender" name="gender" required>
-                    <option value="">اختر الجنس</option>
-                    <option value="ذكر">ذكر</option>
-                    <option value="أنثى">أنثى</option>
-                </select>
-            </div>
-
-            <!-- العمر -->
-            <div class="form-group">
-                <label for="age">العمر:</label>
-                <input type="number" id="age" name="age" required min="0" max="120" placeholder="العمر بالسنة">
-            </div>
-
-            <!-- السكن -->
-            <div class="form-group">
-                <label for="address">السكن:</label>
-                <input type="text" id="address" name="address" required placeholder="المنطقة / المحافظة">
-            </div>
-
-            <!-- رقم الطبلة -->
-            <div class="form-group">
-                <label for="fileNumber">رقم الطبلة:</label>
-                <input type="text" id="fileNumber" name="fileNumber" required placeholder="رقم الملف الطبي">
-            </div>
-
-            <!-- رقم الهاتف -->
-            <div class="form-group">
-                <label for="phone">رقم الهاتف:</label>
-                <input type="tel" id="phone" name="phone" placeholder="07xxxxxxxx">
-            </div>
-
-            <!-- الأخصائي -->
-            <div class="form-group">
-                <label for="specialist">الأخصائي المشرف:</label>
-                <input type="text" id="specialist" name="specialist" required placeholder="اسم الطبيب الأخصائي">
-            </div>
-
-            <!-- تاريخ الدخول -->
-            <div class="form-group">
-                <label for="admissionDate">تاريخ الدخول:</label>
-                <input type="date" id="admissionDate" name="admissionDate" required>
-            </div>
-
-            <!-- التشخيص -->
-            <div class="form-group full-width">
-                <label for="diagnosis">التشخيص:</label>
-                <textarea id="diagnosis" name="diagnosis" rows="3" required placeholder="التشخيص السريري المبدئي..."></textarea>
-            </div>
+    <!-- شاشة إدخال الرمز -->
+    <div id="lockScreen">
+        <h2>تسجيل الدخول للاستمارة</h2>
+        <p>يرجى إدخال الرمز السري للمتابعة</p>
+        <input type="password" id="pinCode" class="pin-input" placeholder="••••" maxlength="6">
+        <div>
+            <button type="button" class="lock-btn" id="loginBtn" onclick="verifyPin()">دخول</button>
         </div>
+        <div id="lockError" class="lock-error">الرمز السري غير صحيح، حاول مرة أخرى.</div>
+    </div>
 
-        <button type="submit" id="submitBtn">حفظ وإرسال البيانات</button>
-        <div id="responseMessage" class="alert"></div>
-    </form>
+    <!-- الاستمارة الأصلية -->
+    <div id="mainFormContainer">
+        <h2 class="form-title">استمارة المريض الراقد</h2>
+        <form id="patientForm">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="patientName">اسم المريض:</label>
+                    <input type="text" id="patientName" name="patientName" required placeholder="الاسم الثلاثي واللقب">
+                </div>
+                <div class="form-group">
+                    <label for="motherName">اسم الأم:</label>
+                    <input type="text" id="motherName" name="motherName" required placeholder="اسم الأم الثلاثي">
+                </div>
+                <div class="form-group">
+                    <label for="gender">الجنس:</label>
+                    <select id="gender" name="gender" required>
+                        <option value="">اختر الجنس</option>
+                        <option value="ذكر">ذكر</option>
+                        <option value="أنثى">أنثى</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="age">العمر:</label>
+                    <input type="number" id="age" name="age" required min="0" max="120" placeholder="العمر بالسنة">
+                </div>
+                <div class="form-group">
+                    <label for="address">السكن:</label>
+                    <input type="text" id="address" name="address" required placeholder="المنطقة / المحافظة">
+                </div>
+                <div class="form-group">
+                    <label for="fileNumber">رقم الطبلة:</label>
+                    <input type="text" id="fileNumber" name="fileNumber" required placeholder="رقم الملف الطبي">
+                </div>
+                <div class="form-group">
+                    <label for="phone">رقم الهاتف:</label>
+                    <input type="tel" id="phone" name="phone" placeholder="07xxxxxxxx">
+                </div>
+                <div class="form-group">
+                    <label for="specialist">الأخصائي المشرف:</label>
+                    <input type="text" id="specialist" name="specialist" required placeholder="اسم الطبيب الأخصائي">
+                </div>
+                <div class="form-group">
+                    <label for="admissionDate">تاريخ الدخول:</label>
+                    <input type="date" id="admissionDate" name="admissionDate" required>
+                </div>
+                <div class="form-group full-width">
+                    <label for="diagnosis">التشخيص:</label>
+                    <textarea id="diagnosis" name="diagnosis" rows="3" required placeholder="التشخيص السريري المبدئي..."></textarea>
+                </div>
+            </div>
+
+            <button type="submit" id="submitBtn">حفظ وإرسال البيانات</button>
+            
+            <div id="progressContainer" class="progress-container">
+                <div class="progress-bar-bg">
+                    <div id="progressBarFill" class="progress-bar-fill"></div>
+                </div>
+                <div id="progressText" class="progress-text">جاري الإرسال: 0%</div>
+            </div>
+
+            <div id="responseMessage" class="alert"></div>
+        </form>
+    </div>
 </div>
 
 <script>
-    // ⚠️ ضع رابط الـ Web App الخاص بـ Google Apps Script هنا حصراً بين علامتي التنصيص
     const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxa5lysi6QJoodcASEjElBD8yhn7lQ8zisVoMb5cJBcSM8wcLz5QSiKvR1k1hv2YN8boQ/exec';
 
-    // تعيين تاريخ اليوم تلقائياً لحقل تاريخ الدخول
-    document.getElementById('admissionDate').valueAsDate = new Date();
+    // التحقق من الرمز عبر السيرفر (Google Apps Script)
+    function verifyPin() {
+        const pin = document.getElementById('pinCode').value;
+        const loginBtn = document.getElementById('loginBtn');
+        const lockError = document.getElementById('lockError');
 
+        if (!pin) return;
+
+        loginBtn.disabled = true;
+        loginBtn.textContent = 'جاري التحقق...';
+        lockError.style.display = 'none';
+
+        // نرسل طلب نوعه checkPin إلى سكربت جوجل
+        fetch(SCRIPT_URL, {
+            method: 'POST',
+            body: JSON.stringify({ action: "checkPin", pin: pin })
+        })
+        .then(response => response.json())
+        .then(result => {
+            if (result.status === "allowed") {
+                document.getElementById('lockScreen').style.display = 'none';
+                document.getElementById('mainFormContainer').style.display = 'block';
+                document.getElementById('admissionDate').valueAsDate = new Date();
+            } else {
+                lockError.style.display = 'block';
+                document.getElementById('pinCode').value = '';
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            lockError.textContent = 'حدث خطأ في الاتصال، حاول مرة أخرى.';
+            lockError.style.display = 'block';
+        })
+        .finally(() => {
+            loginBtn.disabled = false;
+            loginBtn.textContent = 'دخول';
+        });
+    }
+
+    document.getElementById('pinCode').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') verifyPin();
+    });
+
+    // كود إرسال بيانات المريض
     const form = document.getElementById('patientForm');
     const submitBtn = document.getElementById('submitBtn');
     const responseMessage = document.getElementById('responseMessage');
+    const progressContainer = document.getElementById('progressContainer');
+    const progressBarFill = document.getElementById('progressBarFill');
+    const progressText = document.getElementById('progressText');
 
     form.addEventListener('submit', function(e) {
         e.preventDefault();
         
         submitBtn.disabled = true;
-        submitBtn.textContent = 'جاري الحفظ...';
-        responseMessage.className = 'alert';
+        submitBtn.style.display = 'none';
+        progressContainer.style.display = 'block';
         responseMessage.style.display = 'none';
+        
+        let progress = 0;
+        progressBarFill.style.width = '0%';
+        progressText.textContent = 'جاري الإرسال: 0%';
+
+        let interval = setInterval(() => {
+            if (progress < 90) {
+                progress += Math.floor(Math.random() * 15) + 5;
+                if (progress > 90) progress = 90;
+                progressBarFill.style.width = progress + '%';
+                progressText.textContent = `جاري الإرسال: ${progress}%`;
+            }
+        }, 120);
 
         const formData = new FormData(form);
         const data = {};
         formData.forEach((value, key) => (data[key] = value));
+        data.action = "savePatient"; // لتحديد نوع العملية في السكربت
 
         fetch(SCRIPT_URL, {
             method: 'POST',
-            mode: 'no-cors',
-            headers: {
-                'Content-Type': 'application/json',
-            },
             body: JSON.stringify(data)
         })
-        .then(() => {
-            responseMessage.textContent = 'تم حفظ بيانات المريض بنجاح في النظام!';
-            responseMessage.className = 'alert success';
-            form.reset();
-            document.getElementById('admissionDate').valueAsDate = new Date();
+        .then(response => response.json())
+        .then(res => {
+            clearInterval(interval);
+            progressBarFill.style.width = '100%';
+            progressText.textContent = 'جاري الإرسال: 100%';
+            
+            setTimeout(() => {
+                progressContainer.style.display = 'none';
+                responseMessage.textContent = 'تم حفظ بيانات المريض بنجاح في النظام!';
+                responseMessage.className = 'alert success';
+                form.reset();
+                document.getElementById('admissionDate').valueAsDate = new Date();
+                submitBtn.disabled = false;
+                submitBtn.style.display = 'block';
+            }, 400);
         })
         .catch(error => {
+            clearInterval(interval);
             console.error('Error!', error);
+            progressContainer.style.display = 'none';
             responseMessage.textContent = 'حدث خطأ أثناء الحفظ، يرجى المحاولة مرة أخرى.';
             responseMessage.className = 'alert error';
-        })
-        .finally(() => {
             submitBtn.disabled = false;
-            submitBtn.textContent = 'حفظ وإرسال البيانات';
+            submitBtn.style.display = 'block';
         });
     });
 </script>
