@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>استمارة تسجيل المريض الراقد</title>
-    <!-- استخدام خط عربي أنيق Cairo -->
+    <!-- خط Cairo الجميل والمتناسق -->
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         * {
@@ -189,8 +189,8 @@
 </div>
 
 <script>
-    // ⚠️ ضع رابط الـ Web App الخاص بـ Google Apps Script هنا بعد إنشائه
-    const SCRIPT_URL = 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE';
+    // ⚠️ ضع رابط الـ Web App الخاص بـ Google Apps Script هنا حصراً بين علامتي التنصيص
+    const SCRIPT_URL = 'ضع_رابط_الـ_Web_App_هنا';
 
     // تعيين تاريخ اليوم تلقائياً لحقل تاريخ الدخول
     document.getElementById('admissionDate').valueAsDate = new Date();
@@ -213,7 +213,7 @@
 
         fetch(SCRIPT_URL, {
             method: 'POST',
-            mode: 'no-cors', // ضروري لطلبات Google Apps Script من النطاقات الخارجية
+            mode: 'no-cors',
             headers: {
                 'Content-Type': 'application/json',
             },
@@ -223,7 +223,7 @@
             responseMessage.textContent = 'تم حفظ بيانات المريض بنجاح في النظام!';
             responseMessage.className = 'alert success';
             form.reset();
-            document.getElementById('admissionDate').valueAsDate = new Date(); // إعادة ضبط التاريخ
+            document.getElementById('admissionDate').valueAsDate = new Date();
         })
         .catch(error => {
             console.error('Error!', error);
