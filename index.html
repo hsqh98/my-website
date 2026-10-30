@@ -2,380 +2,238 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>استمارة تفاصيل المريض الراقد</title>
-    
-    <!-- خط Cairo لتناسق واجهة الجوال -->
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@600;800;900&display=swap" rel="stylesheet">
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>استمارة تسجيل المريض الراقد</title>
+    <!-- استخدام خط عربي أنيق Cairo -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         * {
             box-sizing: border-box;
             font-family: 'Cairo', sans-serif;
-            margin: 0;
-            padding: 0;
-            -webkit-tap-highlight-color: transparent;
         }
-
         body {
-            background-color: #eef2f6;
-            color: #1e293b;
-            padding: 10px;
+            background-color: #f0f4f8;
+            margin: 0;
+            padding: 20px;
             display: flex;
             justify-content: center;
-            align-items: flex-start;
+            align-items: center;
             min-height: 100vh;
         }
-
-        /* حاوية الاستمارة المخصصة للهاتف */
-        .mobile-card {
+        .container {
             background: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
             width: 100%;
-            max-width: 480px;
-            border-radius: 18px;
-            padding: 20px 14px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-            border: 1px solid #cbd5e1;
+            max-width: 600px;
         }
-
-        .header {
+        h2 {
             text-align: center;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #1e40af;
+            color: #1e3a8a;
+            margin-bottom: 25px;
         }
-
-        .header h2 {
-            color: #1e40af;
-            font-size: 1.4rem;
-            font-weight: 900;
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
         }
-
-        .header p {
-            font-size: 0.85rem;
-            color: #64748b;
-            margin-top: 2px;
-        }
-
-        /* تنبيهات النجاح والخطأ */
-        .alert {
-            display: none;
-            padding: 12px;
-            border-radius: 10px;
-            font-size: 0.95rem;
-            font-weight: 800;
-            text-align: center;
+        .form-group {
             margin-bottom: 15px;
         }
-
-        .alert.success {
-            background-color: #dcfce7;
-            color: #14532d;
-            border: 2px solid #22c55e;
+        .form-group.full-width {
+            grid-column: span 2;
         }
-
-        .alert.error {
-            background-color: #fee2e2;
-            color: #7f1d1d;
-            border: 2px solid #ef4444;
-        }
-
-        /* حواضن الحقول المكتوبة بعناوين بارزة تثبت فوق الإطار */
-        .field-box {
-            position: relative;
-            margin-top: 14px;
-            margin-bottom: 12px;
-        }
-
-        .field-box label {
-            position: absolute;
-            top: -11px;
-            right: 12px;
-            background-color: #1e40af;
-            color: #ffffff !important;
-            font-size: 0.82rem;
-            font-weight: 800;
-            padding: 1px 10px;
-            border-radius: 6px;
-            z-index: 10;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
-        .field-box input,
-        .field-box select,
-        .field-box textarea {
-            width: 100%;
-            padding: 14px 12px 10px 12px;
-            border: 2px solid #94a3b8;
-            border-radius: 12px;
-            font-size: 1rem;
-            font-weight: 700;
-            color: #0f172a;
-            outline: none;
-            background-color: #ffffff;
-            -webkit-appearance: none;
-        }
-
-        .field-box input:focus,
-        .field-box select:focus,
-        .field-box textarea:focus {
-            border-color: #1e40af;
-            box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.15);
-        }
-
-        .field-box textarea {
-            resize: vertical;
-            height: 85px;
-        }
-
-        /* تقسيم الصف إلى عمودين متساويين لخدمة الهاتف */
-        .row-grid {
-            display: flex;
-            gap: 10px;
-        }
-
-        .row-grid .field-box {
-            flex: 1;
-        }
-
-        /* زر فتح الكاميرا المباشر */
-        .camera-btn-box {
-            background-color: #eff6ff;
-            border: 2px dashed #1e40af;
-            border-radius: 14px;
-            padding: 15px;
-            text-align: center;
-            cursor: pointer;
-            margin-top: 5px;
-            transition: background-color 0.2s;
-        }
-
-        .camera-btn-box:active {
-            background-color: #dbeafe;
-        }
-
-        /* معاينة الصورة الملتقطة */
-        .preview-box {
-            display: none;
-            margin-top: 10px;
-            position: relative;
-            border-radius: 12px;
-            overflow: hidden;
-            border: 2px solid #1e40af;
-        }
-
-        .preview-box img {
-            width: 100%;
-            max-height: 220px;
-            object-fit: cover;
+        label {
             display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            color: #334155;
+            font-size: 14px;
         }
-
-        .btn-cancel {
-            position: absolute;
-            top: 8px;
-            left: 8px;
-            background-color: #dc2626;
+        input, select, textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        input:focus, select:focus, textarea:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+        button {
+            background-color: #2563eb;
             color: white;
             border: none;
-            padding: 6px 12px;
-            border-radius: 8px;
-            font-weight: bold;
-            font-size: 0.8rem;
-            cursor: pointer;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        }
-
-        /* زر الإرسال */
-        .btn-submit {
+            padding: 12px;
             width: 100%;
-            background-color: #1e40af;
-            color: #ffffff;
-            border: none;
-            padding: 15px;
-            font-size: 1.1rem;
-            font-weight: 900;
-            border-radius: 12px;
-            margin-top: 15px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 700;
             cursor: pointer;
-            box-shadow: 0 4px 12px rgba(30, 64, 175, 0.3);
             transition: background-color 0.2s;
+            margin-top: 10px;
         }
-
-        .btn-submit:active {
-            background-color: #1e3a8a;
-            transform: scale(0.98);
+        button:hover {
+            background-color: #1d4ed8;
         }
-
-        .btn-submit:disabled {
+        button:disabled {
             background-color: #94a3b8;
             cursor: not-allowed;
-            box-shadow: none;
+        }
+        .alert {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 600;
+            display: none;
+        }
+        .alert.success {
+            background-color: #d1fae5;
+            color: #065f46;
+            display: block;
+        }
+        .alert.error {
+            background-color: #fee2e2;
+            color: #991b1b;
+            display: block;
+        }
+        @media (max-width: 600px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            .form-group.full-width {
+                grid-column: span 1;
+            }
         }
     </style>
 </head>
 <body>
 
-<div class="mobile-card">
-    <div class="header">
-        <h2>استمارة المريض الراقد</h2>
-        <p>قم بإدخال البيانات والتقاط صورة الطبلة</p>
-    </div>
-
-    <!-- صندوق التنبيهات والرسائل التفاعلية -->
-    <div id="alertBox" class="alert"></div>
-
+<div class="container">
+    <h2>استمارة المريض الراقد</h2>
     <form id="patientForm">
-        
-        <!-- 1. الاسم الثلاثي -->
-        <div class="field-box">
-            <label for="full_name">الاسم الثلاثي *</label>
-            <input type="text" id="full_name" name="full_name" required placeholder="أدخل اسم المريض الكامل">
-        </div>
-
-        <!-- 2. اسم الأم والعمر -->
-        <div class="row-grid">
-            <div class="field-box">
-                <label for="mother_name">اسم الأم *</label>
-                <input type="text" id="mother_name" name="mother_name" required placeholder="اسم الأم الثلاثي">
+        <div class="form-grid">
+            <!-- اسم المريض -->
+            <div class="form-group">
+                <label for="patientName">اسم المريض:</label>
+                <input type="text" id="patientName" name="patientName" required placeholder="الاسم الثلاثي واللقب">
             </div>
-            <div class="field-box">
-                <label for="age">العمر *</label>
-                <input type="number" id="age" name="age" required min="0" max="120" placeholder="سنوات">
-            </div>
-        </div>
 
-        <!-- 3. الجنس ورقم الهاتف -->
-        <div class="row-grid">
-            <div class="field-box">
-                <label for="gender">الجنس *</label>
+            <!-- اسم الأم -->
+            <div class="form-group">
+                <label for="motherName">اسم الأم:</label>
+                <input type="text" id="motherName" name="motherName" required placeholder="اسم الأم الثلاثي">
+            </div>
+
+            <!-- الجنس -->
+            <div class="form-group">
+                <label for="gender">الجنس:</label>
                 <select id="gender" name="gender" required>
-                    <option value="" disabled selected>اختر الجنس</option>
+                    <option value="">اختر الجنس</option>
                     <option value="ذكر">ذكر</option>
                     <option value="أنثى">أنثى</option>
                 </select>
             </div>
-            <div class="field-box">
-                <label for="phone_number">رقم الهاتف *</label>
-                <input type="tel" id="phone_number" name="phone_number" required placeholder="07XXXXXXXX">
+
+            <!-- العمر -->
+            <div class="form-group">
+                <label for="age">العمر:</label>
+                <input type="number" id="age" name="age" required min="0" max="120" placeholder="العمر بالسنة">
+            </div>
+
+            <!-- السكن -->
+            <div class="form-group">
+                <label for="address">السكن:</label>
+                <input type="text" id="address" name="address" required placeholder="المنطقة / المحافظة">
+            </div>
+
+            <!-- رقم الطبلة -->
+            <div class="form-group">
+                <label for="fileNumber">رقم الطبلة:</label>
+                <input type="text" id="fileNumber" name="fileNumber" required placeholder="رقم الملف الطبي">
+            </div>
+
+            <!-- رقم الهاتف -->
+            <div class="form-group">
+                <label for="phone">رقم الهاتف:</label>
+                <input type="tel" id="phone" name="phone" placeholder="07xxxxxxxx">
+            </div>
+
+            <!-- الأخصائي -->
+            <div class="form-group">
+                <label for="specialist">الأخصائي المشرف:</label>
+                <input type="text" id="specialist" name="specialist" required placeholder="اسم الطبيب الأخصائي">
+            </div>
+
+            <!-- تاريخ الدخول -->
+            <div class="form-group">
+                <label for="admissionDate">تاريخ الدخول:</label>
+                <input type="date" id="admissionDate" name="admissionDate" required>
+            </div>
+
+            <!-- التشخيص -->
+            <div class="form-group full-width">
+                <label for="diagnosis">التشخيص:</label>
+                <textarea id="diagnosis" name="diagnosis" rows="3" required placeholder="التشخيص السريري المبدئي..."></textarea>
             </div>
         </div>
 
-        <!-- 4. رقم الطبلة وتاريخ الدخول -->
-        <div class="row-grid">
-            <div class="field-box">
-                <label for="file_number">رقم الطبلة *</label>
-                <input type="text" id="file_number" name="file_number" required placeholder="رقم الملف الفريد">
-            </div>
-            <div class="field-box">
-                <label for="entry_date">تاريخ الدخول *</label>
-                <input type="date" id="entry_date" name="entry_date" required>
-            </div>
-        </div>
-
-        <!-- 5. التشخيص الطبي -->
-        <div class="field-box">
-            <label for="diagnosis">التشخيص الطبي *</label>
-            <textarea id="diagnosis" name="diagnosis" required placeholder="اكتب التشخيص الطبي التفصيلي..."></textarea>
-        </div>
-
-        <!-- 6. الالتقاط من الكاميرا مباشرة -->
-        <div class="field-box">
-            <label>صورة الملف / المستند</label>
-            
-            <!-- حقل الكاميرا المخفي -->
-            <input type="file" id="cameraInput" name="file_image" accept="image/*" capture="environment" style="display: none;" onchange="showPreview(event)">
-            
-            <!-- زر التفاعل المباشر للتصوير -->
-            <div class="camera-btn-box" onclick="document.getElementById('cameraInput').click();">
-                <span style="font-size: 2rem; display: block; margin-bottom: 2px;">📷</span>
-                <div style="color: #1e40af; font-weight: 900; font-size: 0.95rem;">اضغط هنا لفتح الكاميرا والتقاط الصورة</div>
-            </div>
-
-            <!-- معاينة الصورة الملتقطة -->
-            <div class="preview-box" id="previewBox">
-                <button type="button" class="btn-cancel" onclick="clearImage()">حذف الصورة ✕</button>
-                <img id="imgPreview" src="#" alt="معاينة صورة الملف">
-            </div>
-        </div>
-
-        <!-- زر الحفظ والإرسال -->
-        <button type="submit" id="btnSubmit" class="btn-submit">حفظ وإرسال البيانات 📤</button>
-
+        <button type="submit" id="submitBtn">حفظ وإرسال البيانات</button>
+        <div id="responseMessage" class="alert"></div>
     </form>
 </div>
 
 <script>
-    // تعيين تاريخ اليوم كقيمة افتراضية حية
-    document.getElementById('entry_date').value = new Date().toISOString().split('T')[0];
+    // ⚠️ ضع رابط الـ Web App الخاص بـ Google Apps Script هنا بعد إنشائه
+    const SCRIPT_URL = 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE';
 
-    // عرض معاينة الصورة فور التقاطها من الكاميرا
-    function showPreview(event) {
-        const file = event.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                document.getElementById('imgPreview').src = e.target.result;
-                document.getElementById('previewBox').style.display = 'block';
-            }
-            reader.readAsDataURL(file);
-        }
-    }
+    // تعيين تاريخ اليوم تلقائياً لحقل تاريخ الدخول
+    document.getElementById('admissionDate').valueAsDate = new Date();
 
-    // إلغاء وحذف الصورة الملتقطة
-    function clearImage() {
-        document.getElementById('cameraInput').value = '';
-        document.getElementById('previewBox').style.display = 'none';
-        document.getElementById('imgPreview').src = '#';
-    }
+    const form = document.getElementById('patientForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const responseMessage = document.getElementById('responseMessage');
 
-    // 🔗 رابط سيرفر Synology الخارجي المباشر
-    const SERVER_URL = 'https://snaslocal1998.sg3.quickconnect.to/hospital/api_patient.php';
-
-    // معالجة إرسال البيانات بدون إعادة تحميل الصفحة
-    document.getElementById('patientForm').addEventListener('submit', async function(e) {
+    form.addEventListener('submit', function(e) {
         e.preventDefault();
         
-        const btnSubmit = document.getElementById('btnSubmit');
-        const alertBox = document.getElementById('alertBox');
-        
-        // تعطيل الزر وإظهار حالة التحميل
-        btnSubmit.disabled = true;
-        btnSubmit.innerText = 'جاري الحفظ والرفع... ⏳';
-        alertBox.style.display = 'none';
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'جاري الحفظ...';
+        responseMessage.className = 'alert';
+        responseMessage.style.display = 'none';
 
-        const formData = new FormData(this);
+        const formData = new FormData(form);
+        const data = {};
+        formData.forEach((value, key) => (data[key] = value));
 
-        try {
-            const response = await fetch(SERVER_URL, {
-                method: 'POST',
-                body: formData
-            });
-
-            const result = await response.json();
-
-            if (result.status === 'success') {
-                alertBox.className = 'alert success';
-                alertBox.innerText = result.message;
-                alertBox.style.display = 'block';
-                
-                // إعادة تفريغ الاستمارة
-                document.getElementById('patientForm').reset();
-                clearImage();
-                document.getElementById('entry_date').value = new Date().toISOString().split('T')[0];
-            } else {
-                alertBox.className = 'alert error';
-                alertBox.innerText = result.message;
-                alertBox.style.display = 'block';
-            }
-        } catch (error) {
-            alertBox.className = 'alert error';
-            alertBox.innerText = 'تعذر الاتصال بسيرفر Synology. يرجى التأكد من تشغيل الخادم وتوفر الاتصال بالشبكة.';
-            alertBox.style.display = 'block';
-        } finally {
-            btnSubmit.disabled = false;
-            btnSubmit.innerText = 'حفظ وإرسال البيانات 📤';
-        }
+        fetch(SCRIPT_URL, {
+            method: 'POST',
+            mode: 'no-cors', // ضروري لطلبات Google Apps Script من النطاقات الخارجية
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+        })
+        .then(() => {
+            responseMessage.textContent = 'تم حفظ بيانات المريض بنجاح في النظام!';
+            responseMessage.className = 'alert success';
+            form.reset();
+            document.getElementById('admissionDate').valueAsDate = new Date(); // إعادة ضبط التاريخ
+        })
+        .catch(error => {
+            console.error('Error!', error);
+            responseMessage.textContent = 'حدث خطأ أثناء الحفظ، يرجى المحاولة مرة أخرى.';
+            responseMessage.className = 'alert error';
+        })
+        .finally(() => {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'حفظ وإرسال البيانات';
+        });
     });
 </script>
 
